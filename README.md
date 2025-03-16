@@ -84,6 +84,10 @@ You'll need to provide values for the following environment variables:
 - `QDRANT_URL`: URL of your Qdrant vector database instance
 - `QDRANT_API_KEY`: API key for authenticating with Qdrant
 
+## TODO
+
+- Make embeddings configurable to allow choosing between OpenAI embeddings or local Ollama for vector generation
+
 ## License
 
 This MCP server is licensed under the MIT License. This means you are free to use, modify, and distribute the software, subject to the terms and conditions of the MIT License. For more details, please see the LICENSE file in the project repository.
