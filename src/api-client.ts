@@ -1,39 +1,25 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
-import OpenAI from 'openai';
 import { chromium } from 'playwright';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-
-// Environment variables for configuration
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const QDRANT_URL = process.env.QDRANT_URL;
-const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-
-if (!QDRANT_URL) {
-  throw new Error('QDRANT_URL environment variable is required for cloud storage');
-}
-
-if (!QDRANT_API_KEY) {
-  throw new Error('QDRANT_API_KEY environment variable is required for cloud storage');
-}
+import { EmbeddingService } from './embeddings.js';
 
 export class ApiClient {
   qdrantClient: QdrantClient;
-  openaiClient?: OpenAI;
+  embeddingService: EmbeddingService;
   browser: any;
 
-  constructor() {
+  constructor(qdrantUrl: string, qdrantApiKey: string) {
     // Initialize Qdrant client with cloud configuration
     this.qdrantClient = new QdrantClient({
-      url: QDRANT_URL,
-      apiKey: QDRANT_API_KEY,
+      url: qdrantUrl,
+      apiKey: qdrantApiKey,
     });
 
-    // Initialize OpenAI client if API key is provided
-    if (OPENAI_API_KEY) {
-      this.openaiClient = new OpenAI({
-        apiKey: OPENAI_API_KEY,
-      });
-    }
+    // Initialize embedding service with Ollama provider
+    this.embeddingService = EmbeddingService.createFromConfig({
+      provider: 'ollama',
+      model: 'nomic-embed-text'
+    });
   }
 
   async initBrowser() {
@@ -49,19 +35,8 @@ export class ApiClient {
   }
 
   async getEmbeddings(text: string): Promise<number[]> {
-    if (!this.openaiClient) {
-      throw new McpError(
-        ErrorCode.InvalidRequest,
-        'OpenAI API key not configured'
-      );
-    }
-
     try {
-      const response = await this.openaiClient.embeddings.create({
-        model: 'text-embedding-ada-002',
-        input: text,
-      });
-      return response.data[0].embedding;
+      return await this.embeddingService.generateEmbeddings(text);
     } catch (error) {
       throw new McpError(
         ErrorCode.InternalError,
@@ -78,7 +53,7 @@ export class ApiClient {
       if (!exists) {
         await this.qdrantClient.createCollection(COLLECTION_NAME, {
           vectors: {
-            size: 1536, // OpenAI ada-002 embedding size
+            size: 768, // nomic-embed-text embedding size
             distance: 'Cosine',
           },
           // Add optimized settings for cloud deployment

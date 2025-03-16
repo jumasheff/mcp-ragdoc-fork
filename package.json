@@ -41,12 +41,14 @@
   "homepage": "https://github.com/hannesrudolph/mcp-ragdocs#readme",
   "dependencies": {
     "@azure/openai": "2.0.0",
-    "@modelcontextprotocol/sdk": "1.0.3",
-    "@qdrant/js-client-rest": "1.12.0",
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "@qdrant/js-client-rest": "^1.12.0",
     "axios": "1.7.9",
     "cheerio": "1.0.0",
+    "dotenv": "^16.4.7",
+    "ollama": "^0.5.14",
     "openai": "4.76.2",
-    "playwright": "1.49.1"
+    "playwright": "^1.49.1"
   },
   "devDependencies": {
     "@types/node": "^20.17.10",
